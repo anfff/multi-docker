@@ -23,7 +23,7 @@ after_success:
   # Log in to the Docker CLI
   # echo "$DOCKER_PASSWORD" retrive your password from environment variables and then emit that over next command
   # then we login using "$DOCKER_ID" and passing password that we receive over stdin
-  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
 
   # Take those images and push them to docker hub
   - docker push bartek26/multi-client
