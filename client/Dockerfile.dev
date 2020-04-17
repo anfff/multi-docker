@@ -1,0 +1,17 @@
+# base image
+FROM node:alpine
+
+# working directory
+WORKDIR '/app'
+
+# copy package.json
+COPY ./package.json ./
+
+# install npm
+RUN npm install
+
+# copy other stuff from folder
+COPY . .
+
+# set defualt command
+CMD ["npm", "run", "start"]

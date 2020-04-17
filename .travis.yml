@@ -1,0 +1,44 @@
+language: generic
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t bartek26/react-test -f ./client/Dockerfile.dev ./client
+
+  # ./client/Dockerfile.dev - relative path, because the dockerfile won't be in the same folder as Dockerfile.dev
+  # ./client - The folder in which the image will be build
+
+script:
+  - docker run -e CI=true bartek26/react-test npm test
+  # you could here add another tests connected with another project installed in before_install section
+
+# After completed tests
+after_success:
+  - docker build -t bartek26/multi-client ./client
+  - docker build -t bartek26/multi-nginx ./nginx
+  - docker build -t bartek26/multi-server ./server
+  - docker build -t bartek26/multi-worker ./worker
+
+  # Log in to the Docker CLI
+  # echo "$DOCKER_PASSWORD" retrive your password from environment variables and then emit that over next command
+  # then we login using "$DOCKER_ID" and passing password that we receive over stdin
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+
+  # Take those images and push them to docker hub
+  - docker push bartek26/multi-client
+  - docker push bartek26/multi-nginx
+  - docker push bartek26/multi-server
+  - docker push bartek26/multi-worker
+
+deploy:
+  provider: elasticbeanstalk
+  region: eu-central-1
+  app: multi-docker
+  env: MultiDocker-env
+  bucket_name: elasticbeanstalk-eu-central-1-318411205200
+  bucket_path: docker-multi
+  on:
+    branch: master
+  access_key_id: $AWS_ACCESS_KEY
+  secret_access_key: $AWS_SECRET_KEY
